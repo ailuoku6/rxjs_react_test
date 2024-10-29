@@ -25,20 +25,22 @@ const fakeData = [
 
 const subject = new Subject<DataType>();
 
+const sortIndexObs = subject.pipe(
+  tap((v) => {
+    console.info("-----------useSortIndex", v);
+  }),
+  sortIndex((data) => {
+    return data.index;
+  })
+);
+
 export const useSortIndex = () => {
   const [value, setValue] = useState<string | null>(null);
 
   useEffect(() => {
-    const subscription = subject
-      .pipe(
-        tap((v) => {
-          console.info("-----------useSortIndex", v);
-        }),
-        sortIndex((data) => {
-          return data.index;
-        })
-      )
-      .subscribe((res) => setValue((prev) => prev + res.content));
+    const subscription = sortIndexObs.subscribe((res) =>
+      setValue((prev) => prev + res.content)
+    );
 
     fakeData.forEach(({ data, timeout }) => {
       setTimeout(() => {

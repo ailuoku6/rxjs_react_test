@@ -5,23 +5,23 @@ export const sortIndex = <T>(mapIndex: (data: T) => number) => {
     let curIndex = 0;
     const valueArr: Array<T> = [];
     const emitArr = (obs: Subscriber<T>) => {
-      while (valueArr[curIndex]) {
+      while (valueArr[curIndex] !== undefined) {
+        console.info("发射数据", curIndex);
         obs.next(valueArr[curIndex]);
         curIndex++;
       }
     };
     const nextObs = new Observable<T>((obs) => {
-      source.subscribe((value) => {
+      const subscription = source.subscribe((value) => {
         const index = mapIndex(value);
-        if (index === curIndex) {
-          valueArr[index] = value;
-          curIndex++;
-          obs.next(value);
-          emitArr(obs);
-        } else {
-          valueArr[index] = value;
-        }
+        console.info("收到数据", index);
+        valueArr[index] = value;
+        emitArr(obs);
       });
+      return () => {
+        // 切记要清理订阅，防止内存泄漏
+        subscription.unsubscribe();
+      };
     });
     return nextObs;
   };
